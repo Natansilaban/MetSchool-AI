@@ -104,10 +104,98 @@ export async function POST(request) {
     }
 
     if (!result) {
+      // Try Groq API if available (14,400 free requests/day)
+      const groqKey = process.env.GROQ_API_KEY;
+      if (groqKey) {
+        try {
+          const formattedMsgs = [
+            { role: 'system', content: activeSystemPrompt },
+            ...messages.map(m => ({ role: m.role, content: m.content }))
+          ];
+          const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${groqKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'llama-3.3-70b-versatile',
+              messages: formattedMsgs,
+              temperature: 0.7,
+              max_tokens: 4096,
+            }),
+          });
+          if (groqRes.ok) {
+            const groqJson = await groqRes.json();
+            const groqText = groqJson.choices?.[0]?.message?.content;
+            if (groqText) {
+              const groqStream = new ReadableStream({
+                async start(controller) {
+                  controller.enqueue(new TextEncoder().encode(groqText));
+                  controller.close();
+                },
+              });
+              return new Response(groqStream, {
+                headers: {
+                  'Content-Type': 'text/plain; charset=utf-8',
+                  'Transfer-Encoding': 'chunked',
+                  'Cache-Control': 'no-cache',
+                },
+              });
+            }
+          }
+        } catch (groqErr) {
+          console.warn('Groq API fallback warning:', groqErr?.message || groqErr);
+        }
+      }
+
+      // Try OpenRouter API if available (Free DeepSeek & Llama 3)
+      const openRouterKey = process.env.OPENROUTER_API_KEY;
+      if (openRouterKey) {
+        try {
+          const formattedMsgs = [
+            { role: 'system', content: activeSystemPrompt },
+            ...messages.map(m => ({ role: m.role, content: m.content }))
+          ];
+          const routerRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openRouterKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'meta-llama/llama-3.3-70b-instruct:free',
+              messages: formattedMsgs,
+            }),
+          });
+          if (routerRes.ok) {
+            const routerJson = await routerRes.json();
+            const routerText = routerJson.choices?.[0]?.message?.content;
+            if (routerText) {
+              const routerStream = new ReadableStream({
+                async start(controller) {
+                  controller.enqueue(new TextEncoder().encode(routerText));
+                  controller.close();
+                },
+              });
+              return new Response(routerStream, {
+                headers: {
+                  'Content-Type': 'text/plain; charset=utf-8',
+                  'Transfer-Encoding': 'chunked',
+                  'Cache-Control': 'no-cache',
+                },
+              });
+            }
+          }
+        } catch (routerErr) {
+          console.warn('OpenRouter API fallback warning:', routerErr?.message || routerErr);
+        }
+      }
+
       const quotaResponseText = `Halo! 👋 Kuota harian API Key Google Gemini (20 request/hari di Google AI Studio) sedang mencapai batas maksimal dari Google.
 
 💡 **Tips untuk Developer:**
-Kamu bisa mengambil API Key baru gratis 100% dalam 10 detik di [Google AI Studio (aistudio.google.com)](https://aistudio.google.com), lalu perbarui \`GEMINI_API_KEY\` di \`.env.local\` agar kuota kembali 100% fresh! ✨`;
+Kamu bisa mengambil API Key baru gratis 100% dalam 10 detik di [Google AI Studio (aistudio.google.com)](https://aistudio.google.com), atau tambahkan \`GROQ_API_KEY\` (14.400 request/hari gratis di [groq.com](https://groq.com)) di \`.env.local\` agar kuota kembali fresh! ✨`;
 
       const quotaStream = new ReadableStream({
         async start(controller) {
