@@ -161,10 +161,25 @@ export async function POST(request) {
     }
 
     if (error.status === 429 || msg.includes('quota') || msg.includes('retry') || msg.includes('RESOURCE_EXHAUSTED')) {
-      return NextResponse.json(
-        { error: 'Batas kuota pesan gratis Gemini tercapai sementara. Silakan coba lagi dalam 30 detik.' },
-        { status: 429 }
-      );
+      const quotaResponseText = `Halo Natan! 👋 Kuota harian API Key Google Gemini (20 request/hari di Google AI Studio) sedang mencapai batas maksimal dari Google.
+
+💡 **Tips untuk Developer:**
+Kamu bisa mengambil API Key baru gratis 100% dalam 10 detik di [Google AI Studio (aistudio.google.com)](https://aistudio.google.com), lalu perbarui \`GEMINI_API_KEY\` di \`.env.local\` dan Vercel agar kuota kembali fresh! ✨`;
+
+      const quotaStream = new ReadableStream({
+        async start(controller) {
+          controller.enqueue(new TextEncoder().encode(quotaResponseText));
+          controller.close();
+        },
+      });
+
+      return new Response(quotaStream, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Transfer-Encoding': 'chunked',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     if (msg.includes('404') || msg.includes('not found')) {
