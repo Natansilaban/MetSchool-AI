@@ -156,10 +156,16 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
   const [loading, setLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState(initialModel);
   const [convId, setConvId] = useState(conversationId);
+  const convIdRef = useRef(conversationId);
   const [error, setError] = useState('');
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    convIdRef.current = conversationId;
+    setConvId(conversationId);
+  }, [conversationId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -249,7 +255,9 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
             { role: 'assistant', content: fullContent },
           ];
 
-          if (!convId) {
+          let currentConvId = convIdRef.current;
+
+          if (!currentConvId) {
             const title = text.slice(0, 60) || 'New Chat';
             const convRef = await addDoc(collection(db, 'conversations'), {
               userId: user.uid,
@@ -259,10 +267,11 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp(),
             });
+            convIdRef.current = convRef.id;
             setConvId(convRef.id);
             router.replace(`/app/chat/${convRef.id}`, { scroll: false });
           } else {
-            await updateDoc(doc(db, 'conversations', convId), {
+            await updateDoc(doc(db, 'conversations', currentConvId), {
               messages: allMessages,
               updatedAt: serverTimestamp(),
             });
