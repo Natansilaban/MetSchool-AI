@@ -225,8 +225,17 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Gagal menghubungi AI');
+        let errText = 'Gagal menghubungi AI';
+        try {
+          const errData = await response.json();
+          errText = errData.error || errText;
+        } catch {
+          try {
+            const text = await response.text();
+            if (text) errText = text;
+          } catch {}
+        }
+        throw new Error(errText);
       }
 
       const reader = response.body.getReader();

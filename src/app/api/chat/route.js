@@ -126,26 +126,30 @@ export async function POST(request) {
             // Try fallback models if stream failed before sending any text
             const fallbacks = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
             let fbSuccess = false;
-            for (const fbModelName of fallbacks) {
-              try {
-                const fbModel = genAI.getGenerativeModel({
-                  model: fbModelName,
-                  systemInstruction: activeSystemPrompt,
-                });
-                const fbChat = fbModel.startChat({ history });
-                const fbRes = await fbChat.sendMessageStream(lastMessage.content);
-                for await (const chunk of fbRes.stream) {
-                  const text = chunk.text();
-                  if (text) {
-                    hasStreamed = true;
-                    controller.enqueue(new TextEncoder().encode(text));
+            for (const fbApiKey of apiKeys) {
+              const fbGenAI = new GoogleGenerativeAI(fbApiKey);
+              for (const fbModelName of fallbacks) {
+                try {
+                  const fbModel = fbGenAI.getGenerativeModel({
+                    model: fbModelName,
+                    systemInstruction: activeSystemPrompt,
+                  });
+                  const fbChat = fbModel.startChat({ history });
+                  const fbRes = await fbChat.sendMessageStream(lastMessage.content);
+                  for await (const chunk of fbRes.stream) {
+                    const text = chunk.text();
+                    if (text) {
+                      hasStreamed = true;
+                      controller.enqueue(new TextEncoder().encode(text));
+                    }
                   }
+                  fbSuccess = true;
+                  break;
+                } catch (fbErr) {
+                  console.warn(`Fallback ${fbModelName} iter warning:`, fbErr?.message || fbErr);
                 }
-                fbSuccess = true;
-                break;
-              } catch (fbErr) {
-                console.warn(`Fallback ${fbModelName} iter warning:`, fbErr?.message || fbErr);
               }
+              if (fbSuccess) break;
             }
             if (fbSuccess) {
               controller.close();
