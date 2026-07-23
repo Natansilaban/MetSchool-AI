@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { DEFAULT_SYSTEM_PROMPT } from '@/lib/models';
 
 export async function POST(request) {
   try {
@@ -31,14 +32,16 @@ export async function POST(request) {
 
     let targetModel = 'gemini-flash-latest';
     if (modelId === 'met-pro-2.5' || modelId === 'gemini-2.5-pro') {
-      targetModel = 'gemini-pro-latest';
+      targetModel = 'gemini-2.0-flash'; // High-performance Flash for fast dev response
     } else if (modelId === 'met-ai-2.5') {
       targetModel = 'gemini-flash-latest';
     }
 
+    const activeSystemPrompt = systemPrompt || DEFAULT_SYSTEM_PROMPT;
+
     const model = genAI.getGenerativeModel({
       model: targetModel,
-      systemInstruction: systemPrompt,
+      systemInstruction: activeSystemPrompt,
     });
 
     // Convert messages to Gemini format
@@ -62,28 +65,25 @@ export async function POST(request) {
     try {
       result = await chat.sendMessageStream(lastMessage.content);
     } catch (streamError) {
-      const isQuotaError = streamError.status === 429 || streamError.message?.includes('quota') || streamError.message?.includes('RESOURCE_EXHAUSTED') || streamError.message?.includes('retry');
-      if (isQuotaError) {
-        const fallbacks = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
-        let success = false;
-        for (const fbModelName of fallbacks) {
-          try {
-            const fallbackModel = genAI.getGenerativeModel({
-              model: fbModelName,
-              systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT,
-            });
-            const fallbackChat = fallbackModel.startChat({ history });
-            result = await fallbackChat.sendMessageStream(lastMessage.content);
-            success = true;
-            break;
-          } catch (e) {
-            console.warn(`Fallback model ${fbModelName} warning:`, e.message);
-          }
+      console.warn(`Primary model ${targetModel} failed, trying fallbacks:`, streamError?.message || streamError);
+      const fallbacks = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
+      let success = false;
+      for (const fbModelName of fallbacks) {
+        if (fbModelName === targetModel) continue;
+        try {
+          const fallbackModel = genAI.getGenerativeModel({
+            model: fbModelName,
+            systemInstruction: activeSystemPrompt,
+          });
+          const fallbackChat = fallbackModel.startChat({ history });
+          result = await fallbackChat.sendMessageStream(lastMessage.content);
+          success = true;
+          break;
+        } catch (e) {
+          console.warn(`Fallback model ${fbModelName} warning:`, e?.message || e);
         }
-        if (!success) throw streamError;
-      } else {
-        throw streamError;
       }
+      if (!success) throw streamError;
     }
 
     const stream = new ReadableStream({
@@ -103,13 +103,13 @@ export async function POST(request) {
 
           if (!hasStreamed) {
             // Try fallback models if stream failed before sending any text
-            const fallbacks = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
+            const fallbacks = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
             let fbSuccess = false;
             for (const fbModelName of fallbacks) {
               try {
                 const fbModel = genAI.getGenerativeModel({
                   model: fbModelName,
-                  systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT,
+                  systemInstruction: activeSystemPrompt,
                 });
                 const fbChat = fbModel.startChat({ history });
                 const fbRes = await fbChat.sendMessageStream(lastMessage.content);
