@@ -324,14 +324,24 @@
     top: 0;
     left: 0;
     bottom: 0;
+    width: 260px !important;
     z-index: 999;
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-    transform: translateX(-100%);
+    transform: translateX(-100%) !important;
     transition: transform var(--transition-base);
+  }
+
+  .sidebarCollapsed {
+    width: 260px !important;
+    transform: translateX(-100%) !important;
   }
 
   .sidebarOpenMobile {
     transform: translateX(0) !important;
+  }
+
+  .collapseBtn {
+    display: none !important;
   }
 
   .backdrop {
