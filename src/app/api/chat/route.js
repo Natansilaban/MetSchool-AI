@@ -8,7 +8,7 @@ function getApiKeys() {
     if (k) keys.push(k.trim());
   }
   if (process.env.GEMINI_API_KEY) {
-    keys.push(process.env.GEMINI_API_KEY.trim());
+    keys.push(...process.env.GEMINI_API_KEY.split(',').map(k => k.trim()));
   }
   return Array.from(new Set(keys)).filter(k => k && k !== 'your_gemini_api_key_here');
 }
