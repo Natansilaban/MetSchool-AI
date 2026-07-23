@@ -163,8 +163,12 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    convIdRef.current = conversationId;
-    setConvId(conversationId);
+    if (conversationId) {
+      convIdRef.current = conversationId;
+      setConvId(conversationId);
+    } else if (!convIdRef.current) {
+      setConvId(null);
+    }
   }, [conversationId]);
 
   useEffect(() => {
