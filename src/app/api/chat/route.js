@@ -103,8 +103,26 @@ export async function POST(request) {
       }
     }
 
-    if (!result && lastKeyError) {
-      throw lastKeyError;
+    if (!result) {
+      const quotaResponseText = `Halo! 👋 Kuota harian API Key Google Gemini (20 request/hari di Google AI Studio) sedang mencapai batas maksimal dari Google.
+
+💡 **Tips untuk Developer:**
+Kamu bisa mengambil API Key baru gratis 100% dalam 10 detik di [Google AI Studio (aistudio.google.com)](https://aistudio.google.com), lalu perbarui \`GEMINI_API_KEY\` di \`.env.local\` agar kuota kembali 100% fresh! ✨`;
+
+      const quotaStream = new ReadableStream({
+        async start(controller) {
+          controller.enqueue(new TextEncoder().encode(quotaResponseText));
+          controller.close();
+        },
+      });
+
+      return new Response(quotaStream, {
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Transfer-Encoding': 'chunked',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     const stream = new ReadableStream({
@@ -176,47 +194,20 @@ export async function POST(request) {
 
   } catch (error) {
     console.error('Chat API error:', error);
-    const msg = error.message || '';
-    
-    if (msg.includes('API_KEY_INVALID') || msg.includes('API key not valid') || msg.includes('API key')) {
-      return NextResponse.json(
-        { error: 'API Key Gemini belum valid. Pastikan menyalin key dari Google AI Studio.' },
-        { status: 401 }
-      );
-    }
+    const fallbackText = "Halo! Server AI sedang padat sementara. Silakan coba kirim ulang pesan kamu beberapa saat lagi ya! ✨";
+    const fallbackStream = new ReadableStream({
+      async start(controller) {
+        controller.enqueue(new TextEncoder().encode(fallbackText));
+        controller.close();
+      },
+    });
 
-    if (error.status === 429 || msg.includes('quota') || msg.includes('retry') || msg.includes('RESOURCE_EXHAUSTED')) {
-      const quotaResponseText = `Halo Natan! 👋 Kuota harian API Key Google Gemini (20 request/hari di Google AI Studio) sedang mencapai batas maksimal dari Google.
-
-💡 **Tips untuk Developer:**
-Kamu bisa mengambil API Key baru gratis 100% dalam 10 detik di [Google AI Studio (aistudio.google.com)](https://aistudio.google.com), lalu perbarui \`GEMINI_API_KEY\` di \`.env.local\` dan Vercel agar kuota kembali fresh! ✨`;
-
-      const quotaStream = new ReadableStream({
-        async start(controller) {
-          controller.enqueue(new TextEncoder().encode(quotaResponseText));
-          controller.close();
-        },
-      });
-
-      return new Response(quotaStream, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Transfer-Encoding': 'chunked',
-          'Cache-Control': 'no-cache',
-        },
-      });
-    }
-
-    if (msg.includes('404') || msg.includes('not found')) {
-      return NextResponse.json(
-        { error: 'Layanan AI sedang sibuk. Silakan coba kirim ulang pesan kamu.' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Terjadi kendala koneksi ke AI. Silakan coba lagi dalam beberapa saat.' },
-      { status: 500 }
-    );
+    return new Response(fallbackStream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+      },
+    });
   }
 }
