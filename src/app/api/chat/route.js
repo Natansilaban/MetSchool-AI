@@ -1,3 +1,18 @@
+function getGroqKey() {
+  if (process.env.GROQ_API_KEY) return process.env.GROQ_API_KEY;
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(process.cwd(), '.env.local');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      const line = content.split(/\r?\n/).find(l => l.trim().startsWith('GROQ_API_KEY='));
+      if (line) return line.split('=')[1].trim();
+    }
+  } catch {}
+  return null;
+}
+
 function getApiKeys() {
   const keys = [];
   if (process.env.GEMINI_API_KEYS) {
@@ -10,6 +25,22 @@ function getApiKeys() {
   if (process.env.GEMINI_API_KEY) {
     keys.push(...process.env.GEMINI_API_KEY.split(',').map(k => k.trim()));
   }
+
+  // Fallback read from file if process.env isn't updated
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(process.cwd(), '.env.local');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf8');
+      const line = content.split('\n').find(l => l.startsWith('GEMINI_API_KEY='));
+      if (line) {
+        const raw = line.split('=')[1].trim();
+        keys.push(...raw.split(',').map(k => k.trim()));
+      }
+    }
+  } catch {}
+
   return Array.from(new Set(keys)).filter(k => k && k !== 'your_gemini_api_key_here');
 }
 
@@ -56,6 +87,52 @@ export async function POST(request) {
 
     const lastMessage = messages[messages.length - 1];
 
+    // 1. Try Groq API if available (14,400 free requests/day)
+    const groqKey = getGroqKey();
+    if (groqKey) {
+      try {
+        const formattedMsgs = [
+          { role: 'system', content: activeSystemPrompt },
+          ...messages.map(m => ({ role: m.role === 'model' ? 'assistant' : (m.role || 'user'), content: m.content }))
+        ];
+        const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${groqKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: formattedMsgs,
+            temperature: 0.7,
+            max_tokens: 4096,
+          }),
+        });
+        if (groqRes.ok) {
+          const groqJson = await groqRes.json();
+          const groqText = groqJson.choices?.[0]?.message?.content;
+          if (groqText) {
+            const groqStream = new ReadableStream({
+              async start(controller) {
+                controller.enqueue(new TextEncoder().encode(groqText));
+                controller.close();
+              },
+            });
+            return new Response(groqStream, {
+              headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Transfer-Encoding': 'chunked',
+                'Cache-Control': 'no-cache',
+              },
+            });
+          }
+        }
+      } catch (groqErr) {
+        console.warn('Groq API warning, falling back to Gemini:', groqErr?.message || groqErr);
+      }
+    }
+
+    // 2. Try Gemini API Keys Pool
     let result = null;
     let lastKeyError = null;
 
@@ -105,12 +182,12 @@ export async function POST(request) {
 
     if (!result) {
       // Try Groq API if available (14,400 free requests/day)
-      const groqKey = process.env.GROQ_API_KEY;
+      const groqKey = getGroqKey();
       if (groqKey) {
         try {
           const formattedMsgs = [
             { role: 'system', content: activeSystemPrompt },
-            ...messages.map(m => ({ role: m.role, content: m.content }))
+            ...messages.map(m => ({ role: m.role === 'model' ? 'assistant' : (m.role || 'user'), content: m.content }))
           ];
           const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
