@@ -1,0 +1,234 @@
+.page {
+  padding: 32px 28px;
+  max-width: 700px;
+  margin: 0 auto;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.section {
+  padding: 24px;
+}
+
+.sectionTitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.sectionDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Profile */
+.profileRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profileAvatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+}
+
+.profileName {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.profileEmail {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Premium */
+.premiumActive {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(236, 72, 153, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.premiumIcon {
+  font-size: 28px;
+}
+
+.premiumTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 2px;
+}
+
+.premiumDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Free Plan */
+.freePlan {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.freeStats {
+  display: flex;
+  gap: 20px;
+}
+
+.freeStat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.freeStatValue {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.freeStatLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.upgradeCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  gap: 16px;
+}
+
+.upgradeTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.upgradeDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.upgradePrice {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.upgradePriceValue {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--accent-glow);
+}
+
+.upgradePricePeriod {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Dev Note */
+.devNote {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px dashed rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.devNoteText {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.devToggle {
+  flex-shrink: 0;
+}
+
+/* API Key */
+.link {
+  color: var(--accent-glow);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--bg-elevated);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--accent-glow);
+}
+
+.envExample {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.envCode {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent-emerald);
+}
+
+/* Danger */
+.dangerSection {
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.dangerTitle {
+  color: #f87171;
+}

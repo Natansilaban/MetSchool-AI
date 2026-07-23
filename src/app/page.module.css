@@ -1,0 +1,657 @@
+/* ============================================================
+   METSCHOOL AI — Main Chat Page
+   Liquid Glass + Teal + White
+   ============================================================ */
+
+.page {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Natural Ambient Background Depth ── */
+.bgBlobs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.blob1 {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(13, 148, 136, 0.08) 0%, transparent 70%);
+  filter: blur(80px);
+  top: -200px;
+  left: -100px;
+}
+
+.blob2 {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.06) 0%, transparent 70%);
+  filter: blur(90px);
+  bottom: -100px;
+  right: -50px;
+}
+
+.blob3 {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20, 83, 76, 0.05) 0%, transparent 70%);
+  filter: blur(80px);
+  top: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ── Floating Glass Header ── */
+.header {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 860px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 0.5px rgba(45, 212, 191, 0.1);
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoImg {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.logoAI {
+  color: var(--accent-glow);
+  font-weight: 800;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnMasuk {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.btnMasuk:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btnDaftar {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #0d9488, #06b6d4);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition-base);
+  box-shadow: 0 3px 12px rgba(13, 148, 136, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.btnDaftar:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 18px rgba(13, 148, 136, 0.55);
+}
+
+/* User chip (when logged in) */
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-full);
+}
+
+.userAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.appLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-glow);
+  padding: 3px 8px;
+  background: rgba(13, 148, 136, 0.12);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.appLink:hover {
+  background: rgba(13, 148, 136, 0.22);
+}
+
+/* ── Main scrollable area ── */
+.main {
+  position: fixed;
+  top: 82px;
+  bottom: 130px;
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Welcome Screen ── */
+.welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 100%;
+  animation: fadeInUp 0.5s ease both;
+}
+
+.welcomeLogoWrap {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.welcomeLogoImg {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.4));
+  position: relative;
+  z-index: 1;
+}
+
+.welcomeTitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin-bottom: 12px;
+}
+
+.welcomeBrand {
+  background: linear-gradient(135deg, #2dd4bf, #0d9488, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcomeSub {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  max-width: 440px;
+  margin-bottom: 36px;
+}
+
+/* Suggestion Chips */
+.suggestions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 580px;
+}
+
+.suggestionChip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.suggestionChip:hover {
+  background: rgba(13, 148, 136, 0.1);
+  border-color: rgba(45, 212, 191, 0.25);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.15), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.suggestionIcon {
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+/* ── Messages ── */
+.messages {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 24px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: fadeIn 0.3s ease both;
+}
+
+.messageUser { justify-content: flex-end; }
+.messageAI { justify-content: flex-start; }
+
+.aiAvatarImg {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  flex-shrink: 0;
+}
+
+.bubble {
+  max-width: 80%;
+  padding: 13px 17px;
+  border-radius: 18px;
+}
+
+.bubbleUser {
+  background: linear-gradient(135deg, #0d9488, #06b6d4);
+  color: white;
+  border-bottom-right-radius: 5px;
+  box-shadow: 0 4px 16px rgba(13, 148, 136, 0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.bubbleAI {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom-left-radius: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.userText {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Code Block */
+.codeBlock {
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 8px 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.codeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 13px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.codeLang {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-glow);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.copyCodeBtn {
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.copyCodeBtn:hover {
+  color: var(--text-secondary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Message Actions */
+.msgActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.msgActionBtn {
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.msgActionBtn:hover {
+  color: var(--text-secondary);
+}
+
+/* ── Error Banner ── */
+.errorBanner {
+  position: fixed;
+  bottom: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  background: rgba(239, 68, 68, 0.12);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: #fca5a5;
+  z-index: 50;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.errorBanner button {
+  color: #fca5a5;
+  cursor: pointer;
+  font-size: 16px;
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-family: inherit;
+  margin-left: 4px;
+}
+
+/* ── Input Area ── */
+.inputArea {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 12px 20px 20px;
+  background: linear-gradient(to top, rgba(6, 22, 20, 0.96) 55%, transparent 100%);
+}
+
+.inputContainer {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.inputBox {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 11px 13px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 0.5px rgba(45, 212, 191, 0.08);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.inputBox:focus-within {
+  border-color: rgba(45, 212, 191, 0.35);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 3px rgba(45, 212, 191, 0.1);
+}
+
+.textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text-primary);
+  font-size: 14.5px;
+  line-height: 1.55;
+  font-family: inherit;
+  padding: 3px 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.textarea::placeholder {
+  color: rgba(94, 234, 212, 0.45);
+}
+
+.textarea:disabled {
+  opacity: 0.5;
+}
+
+.sendBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0d9488, #06b6d4);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: all var(--transition-base);
+  box-shadow: 0 3px 12px rgba(13, 148, 136, 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.sendBtn:hover:not(.sendBtnDisabled) {
+  transform: scale(1.06);
+  box-shadow: 0 5px 18px rgba(13, 148, 136, 0.6);
+}
+
+.sendBtnDisabled {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin-slow 0.7s linear infinite;
+}
+
+.inputFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.footerInfo {
+  font-size: 12px;
+  color: rgba(94, 234, 212, 0.5);
+}
+
+.footerLoginBtn {
+  font-size: 12px;
+  color: var(--accent-glow);
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.footerLoginBtn:hover {
+  color: var(--accent-light);
+}
+
+.authorCredit {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+.authorName {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .welcomeTitle {
+    font-size: 26px;
+  }
+
+  .welcomeDesc {
+    font-size: 13.5px;
+  }
+
+  .suggestions {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .suggestionBtn {
+    padding: 10px 14px;
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    width: calc(100% - 20px);
+    top: 8px;
+    padding: 8px 12px;
+    border-radius: 14px;
+  }
+
+  .welcomeTitle {
+    font-size: 22px;
+  }
+
+  .bubble {
+    max-width: 92%;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .headerActions {
+    gap: 6px;
+  }
+
+  .inputBox {
+    padding: 8px 12px;
+  }
+}
