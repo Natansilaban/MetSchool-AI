@@ -164,11 +164,18 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    if (prevConvIdProp.current !== conversationId) {
-      const isInternalNavigation = convIdRef.current === conversationId && conversationId !== null;
+    if (!conversationId) {
+      prevConvIdProp.current = null;
+      convIdRef.current = null;
+      setConvId(null);
+      setMessages([]);
+      setInput('');
+      setError('');
+    } else if (prevConvIdProp.current !== conversationId) {
+      const isInternalNavigation = convIdRef.current === conversationId;
       prevConvIdProp.current = conversationId;
-      convIdRef.current = conversationId || null;
-      setConvId(conversationId || null);
+      convIdRef.current = conversationId;
+      setConvId(conversationId);
 
       if (!isInternalNavigation) {
         setMessages(initialMessages.map((m, i) => ({ ...m, id: i })));

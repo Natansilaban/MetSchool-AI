@@ -83,7 +83,18 @@ export default function Sidebar() {
 
         {/* New Chat Button */}
         <div className={styles.newChatWrap}>
-          <Link href="/app/chat" className={`btn btn-primary ${styles.newChatBtn}`} id="new-chat-btn" onClick={() => setMobileOpen(false)}>
+          <Link
+            href="/app/chat"
+            className={`btn btn-primary ${styles.newChatBtn}`}
+            id="new-chat-btn"
+            onClick={(e) => {
+              setMobileOpen(false);
+              if (pathname === '/app/chat') {
+                e.preventDefault();
+                window.location.href = '/app/chat';
+              }
+            }}
+          >
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <path d="M12 5v14M5 12h14"/>
             </svg>
