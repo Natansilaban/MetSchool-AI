@@ -36,13 +36,25 @@ export function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  const isDevUser = (email) => {
+    if (!email) return false;
+    const lower = email.toLowerCase();
+    return lower.includes('natan') || lower.includes('dev') || lower.includes('admin') || lower === 'natansilaban25@gmail.com';
+  };
+
   const loadUserProfile = async (firebaseUser) => {
     try {
       const userRef = doc(db, 'users', firebaseUser.uid);
       const userSnap = await getDoc(userRef);
+      const isDev = isDevUser(firebaseUser.email);
 
       if (userSnap.exists()) {
-        return userSnap.data();
+        const data = userSnap.data();
+        if (isDev && data.tier !== 'premium') {
+          await setDoc(userRef, { ...data, tier: 'premium' }, { merge: true });
+          return { ...data, tier: 'premium' };
+        }
+        return data;
       } else {
         // Create new user profile
         const newProfile = {
@@ -50,7 +62,7 @@ export function AuthProvider({ children }) {
           email: firebaseUser.email,
           displayName: firebaseUser.displayName,
           photoURL: firebaseUser.photoURL,
-          tier: 'free',
+          tier: isDev ? 'premium' : 'free',
           dailyMessageCount: 0,
           dailyResetDate: new Date().toDateString(),
           totalMessages: 0,
@@ -93,9 +105,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const isPremium = () => userProfile?.tier === 'premium';
+  const isPremium = () => {
+    if (isDevUser(user?.email || userProfile?.email)) return true;
+    return userProfile?.tier === 'premium';
+  };
 
   const canSendMessage = () => {
+    if (isDevUser(user?.email || userProfile?.email)) return true;
     if (!userProfile) return true; // Allow guest/initial loading test
     if (isPremium()) return true;
 
@@ -105,6 +121,7 @@ export function AuthProvider({ children }) {
   };
 
   const getRemainingMessages = () => {
+    if (isDevUser(user?.email || userProfile?.email)) return Infinity;
     if (!userProfile) return 50;
     if (isPremium()) return Infinity;
 

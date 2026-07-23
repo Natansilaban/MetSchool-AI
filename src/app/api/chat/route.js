@@ -62,17 +62,25 @@ export async function POST(request) {
     try {
       result = await chat.sendMessageStream(lastMessage.content);
     } catch (streamError) {
-      if (streamError.status === 429 || streamError.message?.includes('quota') || streamError.message?.includes('retry')) {
-        try {
-          const fallbackModel = genAI.getGenerativeModel({
-            model: 'gemini-pro-latest',
-            systemInstruction: systemPrompt,
-          });
-          const fallbackChat = fallbackModel.startChat({ history });
-          result = await fallbackChat.sendMessageStream(lastMessage.content);
-        } catch (fallbackError) {
-          throw fallbackError;
+      const isQuotaError = streamError.status === 429 || streamError.message?.includes('quota') || streamError.message?.includes('RESOURCE_EXHAUSTED') || streamError.message?.includes('retry');
+      if (isQuotaError) {
+        const fallbacks = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
+        let success = false;
+        for (const fbModelName of fallbacks) {
+          try {
+            const fallbackModel = genAI.getGenerativeModel({
+              model: fbModelName,
+              systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT,
+            });
+            const fallbackChat = fallbackModel.startChat({ history });
+            result = await fallbackChat.sendMessageStream(lastMessage.content);
+            success = true;
+            break;
+          } catch (e) {
+            console.warn(`Fallback model ${fbModelName} warning:`, e.message);
+          }
         }
+        if (!success) throw streamError;
       } else {
         throw streamError;
       }
