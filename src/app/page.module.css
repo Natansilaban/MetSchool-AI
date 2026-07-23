@@ -102,6 +102,7 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .logoAI {
@@ -611,47 +612,136 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .welcomeTitle {
-    font-size: 26px;
+    font-size: 24px;
   }
 
-  .welcomeDesc {
+  .welcomeSub {
     font-size: 13.5px;
+    margin-bottom: 20px;
   }
 
   .suggestions {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-
-  .suggestionBtn {
-    padding: 10px 14px;
-    font-size: 12.5px;
-  }
 }
 
 @media (max-width: 640px) {
   .header {
-    width: calc(100% - 20px);
-    top: 8px;
-    padding: 8px 12px;
+    width: calc(100% - 16px);
+    top: 6px;
+    padding: 6px 10px;
     border-radius: 14px;
   }
 
+  .headerInner {
+    padding: 4px 8px;
+  }
+
+  .logo {
+    gap: 6px;
+  }
+
+  .logoImg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .logoText {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .headerActions {
+    gap: 4px;
+  }
+
+  .btnMasuk {
+    padding: 5px 9px;
+    font-size: 11.5px;
+  }
+
+  .btnDaftar {
+    padding: 5px 10px;
+    font-size: 11.5px;
+  }
+
+  .main {
+    top: 60px;
+    bottom: 105px;
+  }
+
+  .welcome {
+    justify-content: flex-start;
+    padding: 12px 14px 16px;
+    min-height: auto;
+  }
+
+  .welcomeLogoWrap {
+    margin-bottom: 8px;
+  }
+
+  .welcomeLogoImg {
+    width: 48px;
+    height: 48px;
+  }
+
   .welcomeTitle {
-    font-size: 22px;
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+
+  .welcomeSub {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+
+  .suggestions {
+    gap: 6px;
+  }
+
+  .suggestionChip {
+    padding: 8px 11px;
+    font-size: 11.5px;
+    border-radius: 12px;
+  }
+
+  .suggestionIcon {
+    font-size: 15px;
   }
 
   .bubble {
     max-width: 92%;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
-  .headerActions {
-    gap: 6px;
+  .inputArea {
+    padding: 6px 10px 12px;
   }
 
   .inputBox {
-    padding: 8px 12px;
+    padding: 6px 10px;
+    border-radius: 16px;
+  }
+
+  .textarea {
+    font-size: 13.5px;
+  }
+
+  .sendBtn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .inputFooter {
+    margin-top: 4px;
+    gap: 2px;
+  }
+
+  .footerInfo, .authorCredit {
+    font-size: 10.5px;
   }
 }

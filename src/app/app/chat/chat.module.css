@@ -508,7 +508,7 @@
 
   .header {
     padding: 10px 12px;
-    min-height: 54px;
+    min-height: 52px;
   }
 
   .remainingCount {
@@ -516,31 +516,43 @@
     padding: 3px 8px;
   }
 
+  .welcome {
+    padding: 16px 14px;
+    justify-content: flex-start;
+  }
+
+  .welcomeIcon {
+    font-size: 38px;
+    margin-bottom: 10px;
+  }
+
   .messages {
     padding: 16px 12px;
   }
 
   .welcomeTitle {
-    font-size: 24px;
+    font-size: 22px;
+    margin-bottom: 6px;
   }
 
   .welcomeDesc {
-    font-size: 13px;
-    margin-bottom: 24px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin-bottom: 20px;
   }
 
   .suggestions {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
   }
 
   .suggestionBtn {
-    padding: 10px 14px;
-    font-size: 12.5px;
+    padding: 9px 12px;
+    font-size: 12px;
   }
 
   .inputArea {
-    padding: 10px 12px 14px;
+    padding: 8px 12px 12px;
   }
 
   .inputBox {
@@ -551,7 +563,7 @@
   .messageBubble {
     max-width: 92%;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
   .aiAvatar, .userAvatar {
@@ -562,11 +574,15 @@
 
 @media (max-width: 480px) {
   .welcomeTitle {
-    font-size: 21px;
+    font-size: 19px;
+  }
+
+  .welcomeDesc {
+    font-size: 12px;
+    margin-bottom: 16px;
   }
   
   .inputHint {
     font-size: 10px;
   }
 }
-
