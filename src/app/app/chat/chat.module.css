@@ -90,6 +90,7 @@
 
 .modelName {
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .modelDropdown {
@@ -507,13 +508,19 @@
   }
 
   .header {
-    padding: 10px 12px;
-    min-height: 52px;
+    padding: 8px 12px;
+    min-height: 48px;
+    gap: 8px;
   }
 
   .remainingCount {
-    font-size: 11px;
-    padding: 3px 8px;
+    display: none !important;
+  }
+
+  .modelSelector {
+    padding: 5px 10px;
+    font-size: 12px;
+    gap: 6px;
   }
 
   .welcome {
@@ -581,7 +588,7 @@
     font-size: 12px;
     margin-bottom: 16px;
   }
-  
+
   .inputHint {
     font-size: 10px;
   }

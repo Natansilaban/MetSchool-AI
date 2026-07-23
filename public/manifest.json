@@ -1,0 +1,24 @@
+{
+  "name": "MetSchool AI",
+  "short_name": "MetSchool AI",
+  "description": "Asisten Belajar Pintar berbasis AI didukung Met Flash & Met Pro 2.5",
+  "start_url": "/app/chat",
+  "display": "standalone",
+  "background_color": "#061614",
+  "theme_color": "#0d9488",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
