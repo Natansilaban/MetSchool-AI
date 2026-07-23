@@ -88,16 +88,55 @@ export async function POST(request) {
 
     const stream = new ReadableStream({
       async start(controller) {
+        let hasStreamed = false;
         try {
           for await (const chunk of result.stream) {
             const text = chunk.text();
             if (text) {
+              hasStreamed = true;
               controller.enqueue(new TextEncoder().encode(text));
             }
           }
           controller.close();
         } catch (error) {
-          controller.error(error);
+          console.warn('Stream iteration warning:', error?.message || error);
+
+          if (!hasStreamed) {
+            // Try fallback models if stream failed before sending any text
+            const fallbacks = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
+            let fbSuccess = false;
+            for (const fbModelName of fallbacks) {
+              try {
+                const fbModel = genAI.getGenerativeModel({
+                  model: fbModelName,
+                  systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT,
+                });
+                const fbChat = fbModel.startChat({ history });
+                const fbRes = await fbChat.sendMessageStream(lastMessage.content);
+                for await (const chunk of fbRes.stream) {
+                  const text = chunk.text();
+                  if (text) {
+                    hasStreamed = true;
+                    controller.enqueue(new TextEncoder().encode(text));
+                  }
+                }
+                fbSuccess = true;
+                break;
+              } catch (fbErr) {
+                console.warn(`Fallback ${fbModelName} iter warning:`, fbErr?.message || fbErr);
+              }
+            }
+            if (fbSuccess) {
+              controller.close();
+              return;
+            }
+          }
+
+          if (!hasStreamed) {
+            const fallbackMsg = "Halo! Saya MetSchool AI. Mohon maaf, server AI Google sedang padat. Silakan kirim ulang pesan kamu ya! ✨";
+            controller.enqueue(new TextEncoder().encode(fallbackMsg));
+          }
+          controller.close();
         }
       },
     });
