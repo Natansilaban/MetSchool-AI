@@ -1,6 +1,17 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { NextResponse } from 'next/server';
-import { DEFAULT_SYSTEM_PROMPT } from '@/lib/models';
+function getApiKeys() {
+  const keys = [];
+  if (process.env.GEMINI_API_KEYS) {
+    keys.push(...process.env.GEMINI_API_KEYS.split(',').map(k => k.trim()));
+  }
+  for (let i = 1; i <= 10; i++) {
+    const k = process.env[`GEMINI_API_KEY_${i}`];
+    if (k) keys.push(k.trim());
+  }
+  if (process.env.GEMINI_API_KEY) {
+    keys.push(process.env.GEMINI_API_KEY.trim());
+  }
+  return Array.from(new Set(keys)).filter(k => k && k !== 'your_gemini_api_key_here');
+}
 
 export async function POST(request) {
   try {
@@ -11,15 +22,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid messages' }, { status: 400 });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || '';
-    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+    const apiKeys = getApiKeys();
+    if (apiKeys.length === 0) {
       return NextResponse.json(
         { error: 'API Key belum dikonfigurasi. Silakan tambahkan GEMINI_API_KEY di .env.local' },
         { status: 401 }
       );
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
 
     // Model access control
     const premiumModels = ['met-pro-2.5', 'gemini-2.5-pro'];
@@ -32,17 +41,12 @@ export async function POST(request) {
 
     let targetModel = 'gemini-flash-latest';
     if (modelId === 'met-pro-2.5' || modelId === 'gemini-2.5-pro') {
-      targetModel = 'gemini-2.0-flash'; // High-performance Flash for fast dev response
+      targetModel = 'gemini-2.0-flash';
     } else if (modelId === 'met-ai-2.5') {
       targetModel = 'gemini-flash-latest';
     }
 
     const activeSystemPrompt = systemPrompt || DEFAULT_SYSTEM_PROMPT;
-
-    const model = genAI.getGenerativeModel({
-      model: targetModel,
-      systemInstruction: activeSystemPrompt,
-    });
 
     // Convert messages to Gemini format
     const history = messages.slice(0, -1).map((msg) => ({
@@ -52,38 +56,55 @@ export async function POST(request) {
 
     const lastMessage = messages[messages.length - 1];
 
-    const chat = model.startChat({
-      history,
-      generationConfig: {
-        maxOutputTokens: 8192,
-        temperature: 0.7,
-        topP: 0.9,
-      },
-    });
+    let result = null;
+    let lastKeyError = null;
 
-    let result;
-    try {
-      result = await chat.sendMessageStream(lastMessage.content);
-    } catch (streamError) {
-      console.warn(`Primary model ${targetModel} failed, trying fallbacks:`, streamError?.message || streamError);
-      const fallbacks = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
-      let success = false;
-      for (const fbModelName of fallbacks) {
-        if (fbModelName === targetModel) continue;
-        try {
-          const fallbackModel = genAI.getGenerativeModel({
-            model: fbModelName,
-            systemInstruction: activeSystemPrompt,
-          });
-          const fallbackChat = fallbackModel.startChat({ history });
-          result = await fallbackChat.sendMessageStream(lastMessage.content);
-          success = true;
-          break;
-        } catch (e) {
-          console.warn(`Fallback model ${fbModelName} warning:`, e?.message || e);
+    // Try each API Key until one succeeds
+    for (const apiKey of apiKeys) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+          model: targetModel,
+          systemInstruction: activeSystemPrompt,
+        });
+        const chat = model.startChat({
+          history,
+          generationConfig: {
+            maxOutputTokens: 8192,
+            temperature: 0.7,
+            topP: 0.9,
+          },
+        });
+
+        result = await chat.sendMessageStream(lastMessage.content);
+        break; // Key worked! Break loop
+      } catch (keyError) {
+        console.warn(`API Key (${apiKey.slice(0, 8)}...) failed/limit, rotating to next key:`, keyError?.message || keyError);
+        lastKeyError = keyError;
+
+        // Try model fallbacks for this key
+        const fallbacks = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro-latest'];
+        for (const fbModelName of fallbacks) {
+          if (fbModelName === targetModel) continue;
+          try {
+            const genAI = new GoogleGenerativeAI(apiKey);
+            const fallbackModel = genAI.getGenerativeModel({
+              model: fbModelName,
+              systemInstruction: activeSystemPrompt,
+            });
+            const fallbackChat = fallbackModel.startChat({ history });
+            result = await fallbackChat.sendMessageStream(lastMessage.content);
+            if (result) break;
+          } catch (e) {
+            // Keep trying next fallback model or next API key
+          }
         }
+        if (result) break;
       }
-      if (!success) throw streamError;
+    }
+
+    if (!result && lastKeyError) {
+      throw lastKeyError;
     }
 
     const stream = new ReadableStream({
