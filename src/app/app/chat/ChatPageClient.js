@@ -157,17 +157,25 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
   const [selectedModel, setSelectedModel] = useState(initialModel);
   const [convId, setConvId] = useState(conversationId);
   const convIdRef = useRef(conversationId);
+  const prevConvIdProp = useRef(conversationId);
   const [error, setError] = useState('');
 
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    convIdRef.current = conversationId || null;
-    setConvId(conversationId || null);
-    setMessages(initialMessages.map((m, i) => ({ ...m, id: i })));
-    setSelectedModel(initialModel);
-    setError('');
+    if (prevConvIdProp.current !== conversationId) {
+      const isInternalNavigation = convIdRef.current === conversationId && conversationId !== null;
+      prevConvIdProp.current = conversationId;
+      convIdRef.current = conversationId || null;
+      setConvId(conversationId || null);
+
+      if (!isInternalNavigation) {
+        setMessages(initialMessages.map((m, i) => ({ ...m, id: i })));
+        setSelectedModel(initialModel);
+        setError('');
+      }
+    }
   }, [conversationId, initialMessages, initialModel]);
 
   useEffect(() => {
