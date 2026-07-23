@@ -163,13 +163,12 @@ export default function ChatPage({ conversationId = null, initialMessages = [], 
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    if (conversationId) {
-      convIdRef.current = conversationId;
-      setConvId(conversationId);
-    } else if (!convIdRef.current) {
-      setConvId(null);
-    }
-  }, [conversationId]);
+    convIdRef.current = conversationId || null;
+    setConvId(conversationId || null);
+    setMessages(initialMessages.map((m, i) => ({ ...m, id: i })));
+    setSelectedModel(initialModel);
+    setError('');
+  }, [conversationId, initialMessages, initialModel]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
